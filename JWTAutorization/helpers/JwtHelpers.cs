@@ -14,7 +14,7 @@ namespace JWTAutorization.helpers
                     new Claim(ClaimTypes.Name, userAccounts.UserName),
                     new Claim(ClaimTypes.Email, userAccounts.EmailId),
                     new Claim(ClaimTypes.NameIdentifier, Id.ToString()),
-                    new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddDays(1).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
+                    new Claim(ClaimTypes.Expiration, DateTime.UtcNow.AddSeconds(30).ToString("MMM ddd dd yyyy HH:mm:ss tt"))
             };
             return claims;
         }
@@ -32,7 +32,8 @@ namespace JWTAutorization.helpers
                 // Get secret key
                 var key = System.Text.Encoding.ASCII.GetBytes(jwtSettings.IssuerSigningKey);
                 Guid Id = Guid.Empty;
-                DateTime expireTime = DateTime.UtcNow.AddDays(1);
+                DateTime expireTime = DateTime.UtcNow.AddMinutes(1);
+                expireTime = expireTime.AddHours(-3);
                 UserToken.Validaty = expireTime.TimeOfDay;
                 var JWToken = new JwtSecurityToken(issuer: jwtSettings.ValidIssuer,
                     audience: jwtSettings.ValidAudience, claims: GetClaims(model, out Id),
@@ -42,6 +43,7 @@ namespace JWTAutorization.helpers
                 UserToken.UserName = model.UserName;
                 UserToken.Id = model.Id;
                 UserToken.GuidId = Id;
+                UserToken.ExpiredTime = expireTime;
                 return UserToken;
             }
             catch (Exception)

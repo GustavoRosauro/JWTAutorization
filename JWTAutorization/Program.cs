@@ -1,16 +1,45 @@
 using JWTAutorization.Extensions;
+using JWTAutorization.Model;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+var bindJwtSettings = new JWTSettings();
+builder.Configuration.Bind("JsonWebTokenKeys", bindJwtSettings);
+builder.Services.AddSingleton(bindJwtSettings);
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{
+    options.RequireHttpsMetadata = false;
+    options.SaveToken = true;
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
+    {   
+        
+        ValidateIssuerSigningKey = bindJwtSettings.ValidateIssuerSigningKey,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(bindJwtSettings.IssuerSigningKey)),
+        ValidateIssuer = bindJwtSettings.ValidateIssuer,
+        ValidIssuer = bindJwtSettings.ValidIssuer,
+        ValidateAudience = bindJwtSettings.ValidateAudience,
+        ValidAudience = bindJwtSettings.ValidAudience,
+        RequireExpirationTime = bindJwtSettings.RequireExpirationTime,
+        ValidateLifetime = bindJwtSettings.RequireExpirationTime,
+        ClockSkew = TimeSpan.Zero,
+    };
+});
 
-
-AddJWTTokenServicesExtensions.AddJWTTokenServices(builder.Services,builder.Configuration);
+//AddJWTTokenServicesExtensions.AddJWTTokenServices(builder.Services, builder.Configuration);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options => {
+builder.Services.AddSwaggerGen(options =>
+{
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
         Name = "Authorization",

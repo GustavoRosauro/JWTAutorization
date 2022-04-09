@@ -28,7 +28,7 @@ namespace JWTAutorization.Extensions
                     ValidAudience = bindJwtSettings.ValidAudience,
                     RequireExpirationTime = bindJwtSettings.RequireExpirationTime,
                     ValidateLifetime = bindJwtSettings.RequireExpirationTime,
-                    ClockSkew = TimeSpan.FromDays(1),
+                    ClockSkew = TimeSpan.Zero,
                 };
             });
         }
